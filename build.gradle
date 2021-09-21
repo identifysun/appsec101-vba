@@ -1,6 +1,6 @@
 buildscript {
   repositories {
-	mavenCentral()
+    mavenCentral()
     maven {
       url "https://jitpack.io"
     }
@@ -11,10 +11,12 @@ buildscript {
 }
 
 plugins {
-	id 'org.springframework.boot' version '2.1.7.RELEASE'
-	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
-	id 'java'
-	id 'idea'
+  id 'org.springframework.boot' version '2.1.7.RELEASE'
+  id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+  id 'java'
+  id 'idea'
+  id "com.github.spotbugs" version "4.7.5"
+  id "org.sonarqube" version "3.3"
 }
 
 apply plugin: "org.cyclonedx.bom"
@@ -24,13 +26,42 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11' //可根据你的机器环境，调整为对应的JDK版本，例如”8“
 
 repositories {
-	mavenCentral()
+  mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  spotbugs 'com.github.spotbugs:spotbugs:4.4.1'
+  spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.7.1'
 }
 
 test {
-	useJUnitPlatform()
+  useJUnitPlatform()
+}
+
+spotbugsMain {
+  reports {
+    html {
+      enabled = true
+      destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+      stylesheet = 'fancy-hist.xsl'
+    }
+  }
+}
+
+spotbugs {
+  ignoreFailures = false
+  showStackTraces = true
+  showProgress = true
+  effort = 'max'
+  reportLevel = 'low'
+  reportsDir = file("$buildDir/spotbugs")
+  jvmArgs = [ '-Duser.language=en' ]
+}
+
+// SonarScanner for Gradle
+sonarqube {
+  properties {
+    property "sonar.sourceEncoding", "UTF-8"
+  }
 }
